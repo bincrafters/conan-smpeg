@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import ConanFile, tools, CMake
 import os
 import shutil
 import glob
@@ -18,14 +18,13 @@ class SMPEGConan(ConanFile):
     license = "LGPL-2.0-only"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
+    options = {"shared": [True, False], "fPIC": [True, False], "controls": [True, False]}
+    default_options = {"shared": False, "fPIC": True, "controls": False}
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
     requires = "sdl2/2.0.9@bincrafters/stable"
-
-    def configure(self):
-        del self.settings.compiler.libcxx
+    generators = ["cmake"]
+    exports_sources = ["CMakeLists.txt"]
 
     def config_options(self):
         if self.settings.os == 'Windows':
@@ -49,30 +48,24 @@ class SMPEGConan(ConanFile):
                 prefix = tools.unix_path(root) if self.settings.os == 'Windows' else root
                 tools.replace_prefix_in_pc_file(new_pc, prefix)
 
+    def _configure_cmake(self):
+        cmake = CMake(self)
+        cmake.configure(build_folder=self._build_subfolder)
+        cmake.definitions["CONTROLS"] = self.options.controls
+        return cmake
+
     def build(self):
-        with tools.chdir(self._source_subfolder):
-            pkg_config_paths = [os.path.abspath("pkgconfig")]
-            os.makedirs("pkgconfig")
-            self._copy_pkg_config("sdl2")
-            args = []
-            if self.options.shared:
-                args.extend(["--disable-static", "--enable-shared"])
-            else:
-                args.extend(["--disable-shared", "--enable-static"])
-            if self.settings.build_type == "Debug":
-                args.append("--enable-debug")
-            env_build = AutoToolsBuildEnvironment(self)
-            if self.settings.compiler == "gcc":
-                env_build.flags.append("-Wno-narrowing")
-            elif self.settings.compiler == "clang":
-                env_build.flags.append("-Wno-c++11-narrowing")
-            env_build.configure(args=args, pkg_config_paths=pkg_config_paths)
-            tools.replace_in_file("Makefile", "bin_PROGRAMS = plaympeg$(EXEEXT)", "bin_PROGRAMS = ")
-            env_build.make()
-            env_build.install()
+        tools.replace_in_file(os.path.join(self._source_subfolder, "audio", "MPEGaudio.cpp"),
+                              '#include "MPEGaudio.h"',
+                              '#include <cstring>\n#include "MPEGaudio.h"')
+        cmake = self._configure_cmake()
+        cmake.build()
 
     def package(self):
+        cmake = self._configure_cmake()
+        cmake.install()
         self.copy(pattern="COPYING", dst="licenses", src=self._source_subfolder)
 
     def package_info(self):
         self.cpp_info.libs = ["smpeg2"]
+        self.cpp_info.includedirs.append(os.path.join("include", "smpeg2"))

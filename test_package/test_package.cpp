@@ -1,7 +1,7 @@
 #include <iostream>
 #include <smpeg2/smpeg.h>
 
-int main()
+int main(int argc, char *args[])
 {
     SMPEG_version v;
     SMPEG_VERSION(&v);
