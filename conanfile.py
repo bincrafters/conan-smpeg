@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from conans import ConanFile, tools, CMake
 import os
 import shutil
@@ -14,7 +11,6 @@ class SMPEGConan(ConanFile):
     topics = ("conan", "smpeg", "mpeg", "mpeg-1", "multimedia", "audio", "video")
     url = "https://github.com/bincrafters/conan-smpeg"
     homepage = "https://icculus.org/smpeg/"
-    author = "Bincrafters <bincrafters@gmail.com>"
     license = "LGPL-2.0-only"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
