@@ -12,7 +12,6 @@ class SMPEGConan(ConanFile):
     url = "https://github.com/bincrafters/conan-smpeg"
     homepage = "https://icculus.org/smpeg/"
     license = "LGPL-2.0-only"
-    exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "controls": [True, False]}
     default_options = {"shared": False, "fPIC": True, "controls": False}
