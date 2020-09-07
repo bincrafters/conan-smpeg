@@ -1,6 +1,5 @@
 from conans import ConanFile, tools, CMake
 import os
-import shutil
 import glob
 
 
@@ -30,18 +29,6 @@ class SMPEGConan(ConanFile):
         tools.get(source_url, sha256="979a65b211744a44fa641a9b6e4d64e64a12ff703ae776bafe3c4c4cd85494b3")
         extracted_dir = "smpeg2-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
-
-    def _copy_pkg_config(self, name):
-        root = self.deps_cpp_info[name].rootpath
-        pc_dirs = [os.path.join(root, 'share', 'pkgconfig'), os.path.join(root, 'lib', 'pkgconfig')]
-        for pc_dir in pc_dirs:
-            pc_files = glob.glob('%s/*.pc' % pc_dir)
-            for pc_name in pc_files:
-                new_pc = os.path.join('pkgconfig', os.path.basename(pc_name))
-                self.output.warn('copying .pc file [%s]: %s' % (name, os.path.basename(pc_name)))
-                shutil.copy(pc_name, new_pc)
-                prefix = tools.unix_path(root) if self.settings.os == 'Windows' else root
-                tools.replace_prefix_in_pc_file(new_pc, prefix)
 
     def _configure_cmake(self):
         cmake = CMake(self)
