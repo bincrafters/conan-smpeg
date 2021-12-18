@@ -16,7 +16,7 @@ class SMPEGConan(ConanFile):
     default_options = {"shared": False, "fPIC": True, "controls": False}
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
-    requires = "sdl2/2.0.14@bincrafters/stable"
+    requires = "sdl2/2.0.16@bincrafters/stable"
     generators = ["cmake"]
     exports_sources = ["CMakeLists.txt"]
 
